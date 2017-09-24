@@ -9,7 +9,7 @@ import (
 const n_in int = 2
 const train_n int = 100
 const test_n int = 200
-const epochs int = 200
+const epochs int = 2000
 const learning_rate float64 = 1
 
 type Perceptrons struct {
@@ -62,7 +62,7 @@ func (p *Perceptrons) Exec() {
 		train_x[i][1] = g2.Random()
 		train_t[i] = 1
 	}
-	for i := 0; i < train_n/2-1; i++ {
+	for i := 0; i < test_n/2-1; i++ {
 		test_x[i][0] = g1.Random()
 		test_x[i][1] = g2.Random()
 		test_t[i] = 1
@@ -73,7 +73,7 @@ func (p *Perceptrons) Exec() {
 		train_x[i][1] = g1.Random()
 		train_t[i] = -1
 	}
-	for i := train_n / 2; i < train_n; i++ {
+	for i := test_n / 2; i < test_n; i++ {
 		test_x[i][0] = g2.Random()
 		test_x[i][1] = g1.Random()
 		test_t[i] = -1
