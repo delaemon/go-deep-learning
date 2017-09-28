@@ -65,7 +65,7 @@ func (l *LogisticRegression) predict(x [n_in]float64) [n_out]int {
 	y := l.output(x)
 	t := [n_out]int{}
 	arg_max := -1
-	max := float64(0)
+	var max float64 = 0.0
 
 	for i := 0; i < n_out; i++ {
 		if max < y[i] {
@@ -88,7 +88,7 @@ func (l *LogisticRegression) Exec() {
 	train_x := [train_n][n_in]float64{}
 	train_t := [train_n][n_out]int{}
 
-	test_x := [train_n][n_in]float64{}
+	test_x := [test_n][n_in]float64{}
 	test_t := [test_n][n_out]int{}
 	predicted_t := [test_n][n_out]int{}
 
@@ -136,12 +136,12 @@ func (l *LogisticRegression) Exec() {
 		test_t[i] = [3]int{0, 0, 1}
 	}
 
-	/*
-		for i := 0; i < minibatch_n; i++ {
-			for j := 0; j < minibatch_n; j++ {
-			}
+	for i := 0; i < minibatch_n; i++ {
+		for j := 0; j < minibatch_size; j++ {
+			train_x_minibatch[i][j] = train_x[i*minibatch_size+j]
+			train_t_minibatch[i][j] = train_t[i*minibatch_size+j]
 		}
-	*/
+	}
 
 	classifier := NewLogisticRegression()
 	for epoch := 0; epoch < epochs; epoch++ {
@@ -161,14 +161,14 @@ func (l *LogisticRegression) Exec() {
 	recall := [patterns]float64{}
 
 	for i := 0; i < test_n; i++ {
-		predicted_ := predicted_t[i][1]
-		actual_ := test_t[i][1]
-		confusion_matrix[actual_][predicted_] += 1
+		predicted := predicted_t[i][1]
+		actual := test_t[i][1]
+		confusion_matrix[actual][predicted] += 1
 	}
 
 	for i := 0; i < patterns; i++ {
-		col := 0.0
-		row := 0.0
+		var col float64 = 0.0
+		var row float64 = 0.0
 		for j := 0; j < patterns; j++ {
 			if i == j {
 				accuracy += float64(confusion_matrix[i][j])
