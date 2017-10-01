@@ -2,6 +2,7 @@ package network
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/delaemon/go-deep-learning/util"
 )
@@ -94,8 +95,8 @@ func (l *LogisticRegression) Exec() {
 
 	train_x_minibatch := [minibatch_n][minibatch_size][n_in]float64{}
 	train_t_minibatch := [minibatch_n][minibatch_size][n_out]int{}
+	minibatch_index := rand.Perm(train_n)
 
-	// todo shuffle
 	g1 := util.NewGaussianDistribution(-2.0, 1.0)
 	g2 := util.NewGaussianDistribution(2.0, 1.0)
 	g3 := util.NewGaussianDistribution(0.0, 1.0)
@@ -124,13 +125,13 @@ func (l *LogisticRegression) Exec() {
 		test_t[i] = [3]int{0, 1, 0}
 	}
 
-	for i := train_n/patterns*2 - 1; i < train_n/patterns*2-1; i++ {
+	for i := train_n/patterns*2 - 1; i < train_n; i++ {
 		train_x[i][0] = g3.Random()
 		train_x[i][1] = g3.Random()
 		train_t[i] = [3]int{0, 0, 1}
 	}
 
-	for i := test_n/patterns*2 - 1; i < test_n/patterns*2-1; i++ {
+	for i := test_n/patterns*2 - 1; i < test_n; i++ {
 		test_x[i][0] = g3.Random()
 		test_x[i][1] = g3.Random()
 		test_t[i] = [3]int{0, 0, 1}
@@ -138,8 +139,8 @@ func (l *LogisticRegression) Exec() {
 
 	for i := 0; i < minibatch_n; i++ {
 		for j := 0; j < minibatch_size; j++ {
-			train_x_minibatch[i][j] = train_x[i*minibatch_size+j]
-			train_t_minibatch[i][j] = train_t[i*minibatch_size+j]
+			train_x_minibatch[i][j] = train_x[minibatch_index[i*minibatch_size+j]]
+			train_t_minibatch[i][j] = train_t[minibatch_index[i*minibatch_size+j]]
 		}
 	}
 
@@ -167,8 +168,8 @@ func (l *LogisticRegression) Exec() {
 	}
 
 	for i := 0; i < patterns; i++ {
-		var col float64 = 0.0
-		var row float64 = 0.0
+		var col float64 = 0
+		var row float64 = 0
 		for j := 0; j < patterns; j++ {
 			if i == j {
 				accuracy += float64(confusion_matrix[i][j])
