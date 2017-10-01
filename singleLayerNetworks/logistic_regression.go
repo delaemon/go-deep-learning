@@ -66,7 +66,7 @@ func (l *LogisticRegression) predict(x [n_in]float64) [n_out]int {
 	y := l.output(x)
 	t := [n_out]int{}
 	arg_max := -1
-	var max float64 = 0.0
+	var max float64 = 0
 
 	for i := 0; i < n_out; i++ {
 		if max < y[i] {
@@ -83,6 +83,15 @@ func (l *LogisticRegression) predict(x [n_in]float64) [n_out]int {
 		}
 	}
 	return t
+}
+
+func (l *LogisticRegression) search(array [patterns]int, target int) int {
+	for k, v := range array {
+		if v == target {
+			return k
+		}
+	}
+	return -1
 }
 
 func (l *LogisticRegression) Exec() {
@@ -162,8 +171,8 @@ func (l *LogisticRegression) Exec() {
 	recall := [patterns]float64{}
 
 	for i := 0; i < test_n; i++ {
-		predicted := predicted_t[i][1]
-		actual := test_t[i][1]
+		predicted := l.search(predicted_t[i], 1)
+		actual := l.search(test_t[i], 1)
 		confusion_matrix[actual][predicted] += 1
 	}
 
