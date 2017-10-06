@@ -6,23 +6,28 @@ import (
 	util "github.com/delaemon/go-deep-learning/util"
 )
 
-const n_in int = 2
-const train_n int = 100
-const test_n int = 200
-const epochs int = 2000
-const learning_rate float64 = 1
-
 type Perceptrons struct {
-	n_in int
-	w    []float64
+	n_in          int
+	w             []float64
+	train_n       int
+	test_n        int
+	epochs        int
+	learning_rate float64
 }
 
-func NewPerceptrons() *Perceptrons {
+func NewPerceptrons(n_in, train_n, test_n, epochs int, learning_rate float64) *Perceptrons {
 	w := make([]float64, n_in)
-	return &Perceptrons{n_in, w}
+	return &Perceptrons{
+		n_in:          n_in,
+		w:             w,
+		train_n:       train_n,
+		test_n:        test_n,
+		epochs:        epochs,
+		learning_rate: learning_rate,
+	}
 }
 
-func (p *Perceptrons) train(x [n_in]float64, t int, leaningRate float64) int {
+func (p *Perceptrons) train(x []float64, t int, leaningRate float64) int {
 	var classified int = 0
 	var c float64 = 0
 	for i := 0; i < p.n_in; i++ {
@@ -38,7 +43,7 @@ func (p *Perceptrons) train(x [n_in]float64, t int, leaningRate float64) int {
 	return classified
 }
 
-func (p *Perceptrons) predict(x [n_in]float64) int {
+func (p *Perceptrons) predict(x []float64) int {
 	var preActivation float64 = 0
 	for i := 0; i < p.n_in; i++ {
 		preActivation += p.w[i] * x[i]
@@ -47,33 +52,39 @@ func (p *Perceptrons) predict(x [n_in]float64) int {
 }
 
 func (p *Perceptrons) Exec() {
-	train_x := [train_n][n_in]float64{}
-	train_t := [train_n]int{}
+	train_x := make([][]float64, p.train_n)
+	for i := 0; i < p.train_n; i++ {
+		train_x[i] = make([]float64, p.n_in)
+	}
+	train_t := make([]int, p.train_n)
 
-	test_x := [test_n][n_in]float64{}
-	test_t := [test_n]int{}
-	predicted_t := [test_n]int{}
+	test_x := make([][]float64, p.test_n)
+	for i := 0; i < p.test_n; i++ {
+		test_x[i] = make([]float64, p.n_in)
+	}
+	test_t := make([]int, p.train_n)
+	predicted_t := make([]int, p.test_n)
 
 	g1 := util.NewGaussianDistribution(-2.0, 1.0)
 	g2 := util.NewGaussianDistribution(2.0, 1.0)
 
-	for i := 0; i < train_n/2-1; i++ {
+	for i := 0; i < p.train_n/2-1; i++ {
 		train_x[i][0] = g1.Random()
 		train_x[i][1] = g2.Random()
 		train_t[i] = 1
 	}
-	for i := 0; i < test_n/2-1; i++ {
+	for i := 0; i < p.test_n/2-1; i++ {
 		test_x[i][0] = g1.Random()
 		test_x[i][1] = g2.Random()
 		test_t[i] = 1
 	}
 
-	for i := train_n / 2; i < train_n; i++ {
+	for i := p.train_n / 2; i < p.train_n; i++ {
 		train_x[i][0] = g2.Random()
 		train_x[i][1] = g1.Random()
 		train_t[i] = -1
 	}
-	for i := test_n / 2; i < test_n; i++ {
+	for i := p.test_n / 2; i < p.test_n; i++ {
 		test_x[i][0] = g2.Random()
 		test_x[i][1] = g1.Random()
 		test_t[i] = -1
@@ -81,23 +92,23 @@ func (p *Perceptrons) Exec() {
 
 	// train
 	epoch := 0
-	classifier := NewPerceptrons()
+	classifier := NewPerceptrons(2, 100, 200, 2000, 1)
 	for true {
-		classified_ := 0
-		for i := 0; i < train_n; i++ {
-			classified_ += classifier.train(train_x[i], train_t[i], learning_rate)
+		classified := 0
+		for i := 0; i < p.train_n; i++ {
+			classified += classifier.train(train_x[i], train_t[i], p.learning_rate)
 		}
-		if classified_ == train_n {
+		if classified == p.train_n {
 			break
 		}
 		epoch++
-		if epoch > epochs {
+		if epoch > p.epochs {
 			break
 		}
 	}
 
 	// test
-	for i := 0; i < test_n; i++ {
+	for i := 0; i < p.test_n; i++ {
 		predicted_t[i] = classifier.predict(test_x[i])
 	}
 
@@ -106,7 +117,7 @@ func (p *Perceptrons) Exec() {
 	var precision float64
 	var recall float64
 
-	for i := 0; i < test_n; i++ {
+	for i := 0; i < p.test_n; i++ {
 		if predicted_t[i] > 0 {
 			if test_t[i] > 0 {
 				accuracy += 1
@@ -126,7 +137,7 @@ func (p *Perceptrons) Exec() {
 		}
 	}
 
-	accuracy /= float64(test_n)
+	accuracy /= float64(p.test_n)
 	precision /= float64(confusion_matrix[0][0] + confusion_matrix[1][0])
 	recall /= float64(confusion_matrix[0][0] + confusion_matrix[0][1])
 
