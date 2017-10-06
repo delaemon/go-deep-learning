@@ -62,7 +62,7 @@ func (p *Perceptrons) Exec() {
 	for i := 0; i < p.test_n; i++ {
 		test_x[i] = make([]float64, p.n_in)
 	}
-	test_t := make([]int, p.train_n)
+	test_t := make([]int, p.test_n)
 	predicted_t := make([]int, p.test_n)
 
 	g1 := util.NewGaussianDistribution(-2.0, 1.0)
