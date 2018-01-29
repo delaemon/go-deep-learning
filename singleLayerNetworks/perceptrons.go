@@ -1,4 +1,4 @@
-package network
+package sln
 
 import (
 	"fmt"
@@ -6,37 +6,34 @@ import (
 	util "github.com/delaemon/go-deep-learning/util"
 )
 
+const (
+	P_N_in         = 2
+	P_Train_n      = 100
+	P_Test_n       = 200
+	P_Epochs       = 2000
+	P_LearningRate = 1.0
+)
+
 type Perceptrons struct {
-	n_in          int
-	w             []float64
-	train_n       int
-	test_n        int
-	epochs        int
-	learning_rate float64
+	w []float64
 }
 
-func NewPerceptrons(n_in, train_n, test_n, epochs int, learning_rate float64) *Perceptrons {
-	w := make([]float64, n_in)
+func NewPerceptrons() *Perceptrons {
 	return &Perceptrons{
-		n_in:          n_in,
-		w:             w,
-		train_n:       train_n,
-		test_n:        test_n,
-		epochs:        epochs,
-		learning_rate: learning_rate,
+		w: make([]float64, P_N_in),
 	}
 }
 
 func (p *Perceptrons) train(x []float64, t int, leaningRate float64) int {
 	var classified int = 0
 	var c float64 = 0
-	for i := 0; i < p.n_in; i++ {
+	for i := 0; i < P_N_in; i++ {
 		c += p.w[i] * x[i] * float64(t)
 	}
 	if c > 0 {
 		classified = 1
 	} else {
-		for i := 0; i < p.n_in; i++ {
+		for i := 0; i < P_N_in; i++ {
 			p.w[i] += leaningRate * x[i] * float64(t)
 		}
 	}
@@ -45,46 +42,46 @@ func (p *Perceptrons) train(x []float64, t int, leaningRate float64) int {
 
 func (p *Perceptrons) predict(x []float64) int {
 	var preActivation float64 = 0
-	for i := 0; i < p.n_in; i++ {
+	for i := 0; i < P_N_in; i++ {
 		preActivation += p.w[i] * x[i]
 	}
 	return util.Step(preActivation)
 }
 
 func (p *Perceptrons) Exec() {
-	train_x := make([][]float64, p.train_n)
-	for i := 0; i < p.train_n; i++ {
-		train_x[i] = make([]float64, p.n_in)
+	train_x := make([][]float64, P_Train_n)
+	for i := 0; i < P_Train_n; i++ {
+		train_x[i] = make([]float64, P_N_in)
 	}
-	train_t := make([]int, p.train_n)
+	train_t := make([]int, P_Train_n)
 
-	test_x := make([][]float64, p.test_n)
-	for i := 0; i < p.test_n; i++ {
-		test_x[i] = make([]float64, p.n_in)
+	test_x := make([][]float64, P_Test_n)
+	for i := 0; i < P_Test_n; i++ {
+		test_x[i] = make([]float64, P_N_in)
 	}
-	test_t := make([]int, p.test_n)
-	predicted_t := make([]int, p.test_n)
+	test_t := make([]int, P_Test_n)
+	predicted_t := make([]int, P_Test_n)
 
 	g1 := util.NewGaussianDistribution(-2.0, 1.0)
 	g2 := util.NewGaussianDistribution(2.0, 1.0)
 
-	for i := 0; i < p.train_n/2-1; i++ {
+	for i := 0; i < P_Train_n/2-1; i++ {
 		train_x[i][0] = g1.Random()
 		train_x[i][1] = g2.Random()
 		train_t[i] = 1
 	}
-	for i := 0; i < p.test_n/2-1; i++ {
+	for i := 0; i < P_Test_n/2-1; i++ {
 		test_x[i][0] = g1.Random()
 		test_x[i][1] = g2.Random()
 		test_t[i] = 1
 	}
 
-	for i := p.train_n / 2; i < p.train_n; i++ {
+	for i := P_Train_n / 2; i < P_Train_n; i++ {
 		train_x[i][0] = g2.Random()
 		train_x[i][1] = g1.Random()
 		train_t[i] = -1
 	}
-	for i := p.test_n / 2; i < p.test_n; i++ {
+	for i := P_Test_n / 2; i < P_Test_n; i++ {
 		test_x[i][0] = g2.Random()
 		test_x[i][1] = g1.Random()
 		test_t[i] = -1
@@ -92,23 +89,23 @@ func (p *Perceptrons) Exec() {
 
 	// train
 	epoch := 0
-	classifier := NewPerceptrons(2, 100, 200, 2000, 1)
+	classifier := NewPerceptrons()
 	for true {
 		classified := 0
-		for i := 0; i < p.train_n; i++ {
-			classified += classifier.train(train_x[i], train_t[i], p.learning_rate)
+		for i := 0; i < P_Train_n; i++ {
+			classified += classifier.train(train_x[i], train_t[i], P_LearningRate)
 		}
-		if classified == p.train_n {
+		if classified == P_Train_n {
 			break
 		}
 		epoch++
-		if epoch > p.epochs {
+		if epoch > P_Epochs {
 			break
 		}
 	}
 
 	// test
-	for i := 0; i < p.test_n; i++ {
+	for i := 0; i < P_Test_n; i++ {
 		predicted_t[i] = classifier.predict(test_x[i])
 	}
 
@@ -117,7 +114,7 @@ func (p *Perceptrons) Exec() {
 	var precision float64
 	var recall float64
 
-	for i := 0; i < p.test_n; i++ {
+	for i := 0; i < P_Test_n; i++ {
 		if predicted_t[i] > 0 {
 			if test_t[i] > 0 {
 				accuracy += 1
@@ -137,7 +134,7 @@ func (p *Perceptrons) Exec() {
 		}
 	}
 
-	accuracy /= float64(p.test_n)
+	accuracy /= float64(P_Test_n)
 	precision /= float64(confusion_matrix[0][0] + confusion_matrix[1][0])
 	recall /= float64(confusion_matrix[0][0] + confusion_matrix[0][1])
 
