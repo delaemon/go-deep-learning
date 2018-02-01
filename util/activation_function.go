@@ -6,6 +6,34 @@ func Sigmoid(x float64) float64 {
 	return 1.0 / (1.0 + math.Pow(math.E, x))
 }
 
+func Desigmoid(x float64) float64 {
+	return x * (1.0 - x)
+}
+
+func Tanh(x float64) float64 {
+	return math.Tanh(x)
+}
+
+func Detanh(x float64) float64 {
+	return 1.0 - x*x
+}
+
+func ReLU(x float64) float64 {
+	if x > 0 {
+		return x
+	} else {
+		return 0.0
+	}
+}
+
+func DeReLU(x float64) float64 {
+	if x > 0 {
+		return 1.0
+	} else {
+		return 0.0
+	}
+}
+
 func Step(x float64) int {
 	if x >= 0 {
 		return 1
