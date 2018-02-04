@@ -42,7 +42,7 @@ func NewHiddenLayer(activation string) *HiddenLayer {
 	}
 }
 
-func (h *HiddenLayer) output(x []float64) [MLP_N_out]float64 {
+func (h *HiddenLayer) output(x [MLP_N_in]float64) [MLP_N_out]float64 {
 	y := [MLP_N_out]float64{}
 	for j := 0; j < MLP_N_out; j++ {
 		preActivation_ := 0.0
@@ -55,24 +55,11 @@ func (h *HiddenLayer) output(x []float64) [MLP_N_out]float64 {
 	return y
 }
 
-func (h *HiddenLayer) outputBinomial(x []int) [MLP_N_out]int {
-	y := [MLP_N_out]int{}
-	xCast := make([]float64, len(x))
-	for i := 0; i < len(xCast); i++ {
-		xCast[i] = float64(x[i])
-	}
-	out := h.output(xCast)
-	for j := 0; j < MLP_N_out; j++ {
-		y[j] = util.Binomial(1, out[j])
-	}
-	return y
-}
-
-func (h *HiddenLayer) Forward(x []float64) [MLP_N_out]float64 {
+func (h *HiddenLayer) forward(x [MLP_N_in]float64) [MLP_N_out]float64 {
 	return h.output(x)
 }
 
-func (h *HiddenLayer) Backward(x [][]float64, z [][]float64, dy [][]float64, wprev [][]float64) [MLP_MinibatchSize][MLP_N_out]float64 {
+func (h *HiddenLayer) backward(x [MLP_MinibatchSize][MLP_N_in]float64, z [MLP_MinibatchSize][MLP_N_in]float64, dy [MLP_MinibatchSize][MLP_N_out]float64, wprev [MLP_N_out][MLP_N_in]float64) [MLP_MinibatchSize][MLP_N_out]float64 {
 	dz := [MLP_MinibatchSize][MLP_N_out]float64{}
 	grad_w := [MLP_N_out][MLP_N_in]float64{}
 	grad_b := [MLP_N_out]float64{}
